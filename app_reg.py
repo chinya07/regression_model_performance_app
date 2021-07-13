@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import base64
 from PIL import Image
-from sklearn.metrics import explained_variance_score, max_error, mean_absolute_error, mean_squared_error, mean_squared_log_error, median_absolute_error r2_score, mean_poisson_deviance, mean_gamma_deviance, mean_absolute_percentage_error
+from sklearn.metrics import explained_variance_score, max_error, mean_absolute_error, mean_squared_error, mean_squared_log_error, median_absolute_error, r2_score, mean_poisson_deviance, mean_gamma_deviance, mean_absolute_percentage_error
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 
