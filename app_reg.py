@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import base64
 from PIL import Image
-from sklearn.metrics import explained_variance_score, max_error, mean_absolute_error, mean_squared_error, mean_squared_log_error, median_absolute_error, r2_score, mean_poisson_deviance, mean_gamma_deviance, mean_absolute_percentage_error
+from sklearn.metrics import explained_variance_score, max_error, mean_absolute_error, mean_squared_error, mean_squared_log_error, median_absolute_error, r2_score, mean_poisson_deviance, mean_gamma_deviance
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 
@@ -16,6 +16,19 @@ def calc_metrics(input_data):
     lr.fit(X_train,y_train)
     y_pred = lr.predict(X_test)
     
+    #from sklearn.metrics import mean_absolute_percentage_error is showing error mostly due to sklearn version issues
+    # so we are defining separate funstion for it
+    def mean_absolute_percentage_error(y_test, y_pred): 
+        y_test, y_pred = np.array(y_test), np.array(y_pred)
+        return np.mean(np.abs((y_test - y_pred) / y_test)) * 100
+
+
+    def adjusted_r2_score(r2):
+        n=len(input_data)   #total observations
+        k=1                 # number of independent variables
+        adj_r2_score = 1 - ((1-r2)*(n-1)/(n-k-1))
+        return adj_r2_score
+
     explained_variance = explained_variance_score(y_test,y_pred)
     max_error = max_error(y_test,y_pred)
     mae = mean_absolute_error(y_test,y_pred)
@@ -27,6 +40,7 @@ def calc_metrics(input_data):
     mpd = mean_poisson_deviance(y_test,y_pred)
     mgd = mean_gamma_deviance(y_test,y_pred)
     mape = mean_absolute_percentage_error(y_test,y_pred)
+    adj_r2_score = adjusted_r2_score(r2)
 
     explained_variance_series = pd.Series(explained_variance, name='Explained_variance')
     max_error_series = pd.Series(max_error, name='Max_Error')
@@ -39,8 +53,9 @@ def calc_metrics(input_data):
     mpd_series = pd.Series(mpd, name='Mean_Poisson_Deviance')
     mgd_series = pd.Series(mgd, name='Mean_Gamma_Deviance')
     mape_series = pd.Series(mape, name='Mean_Absolute_Percentage_Error')
+    adj_r2_score_series = pd.Series(adj_r2_score, name='Adjusted_r2_score')
 
-    df = pd.concat([explained_variance_series, max_error_series, mae_series, mse_series, rmse_series, msle_series, medae_series, r2_series, mpd_series, mgd_series, mape_series], axis=1)
+    df = pd.concat([explained_variance_series, max_error_series, mae_series, mse_series, rmse_series, msle_series, medae_series, r2_series, mpd_series, mgd_series, mape_series, adj_r2_score_series], axis=1)
     return df
 
 # Load example data
@@ -65,7 +80,7 @@ st.sidebar.markdown("""
 uploaded_file = st.sidebar.file_uploader('Upload your input CSV file', type=['csv'])
 
 # Sidebar panel - Performance metrics
-performance_metrics = ['Explained_variance', 'Max_Error', 'MAE', 'MSE','RMSE', 'MSLE', 'MedAE', 'R2', 'MPD', 'MGD', 'MAPE']
+performance_metrics = ['Explained_variance', 'Max_Error', 'MAE', 'MSE','RMSE', 'MSLE', 'MedAE', 'R2', 'MPD', 'MGD', 'MAPE', 'Adj_r2_score']
 selected_metrics = st.sidebar.multiselect('Performance metrics', performance_metrics, performance_metrics)
 
 # Main panel
@@ -79,7 +94,6 @@ This app calculates the model performance metrics given the actual and predicted
 
 if uploaded_file is not None:
     input_df = pd.read_csv(uploaded_file)
-    confusion_matrix_df = calc_confusion_matrix(input_df)
     metrics_df = calc_metrics(input_df)
     selected_metrics_df = metrics_df[ selected_metrics ]
     st.header('Input data')
@@ -91,7 +105,6 @@ else:
     st.info('Awaiting the upload of the input file.')
     if st.button('Use Example Data'):
         input_df = load_example_data()
-        confusion_matrix_df = calc_confusion_matrix(input_df)
         metrics_df = calc_metrics(input_df)
         selected_metrics_df = metrics_df[ selected_metrics ]
         st.header('Input data')
