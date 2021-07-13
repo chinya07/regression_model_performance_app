@@ -40,20 +40,12 @@ def calc_metrics(input_data):
     mgd_series = pd.Series(mgd, name='Mean_Gamma_Deviance')
     mape_series = pd.Series(mape, name='Mean_Absolute_Percentage_Error')
 
-    df = pd.concat( [explained_variance_series, max_error_series, mae_series, mse_series, rmse_series, msle_series, medae_series, r2_series, mpd_series, mgd_series, mape_series], axis=1 )
+    df = pd.concat([explained_variance_series, max_error_series, mae_series, mse_series, rmse_series, msle_series, medae_series, r2_series, mpd_series, mgd_series, mape_series], axis=1)
     return df
-
-# Calculates confusion matrix
-def calc_confusion_matrix(input_data):
-    Y_actual = input_data.iloc[:,0]
-    Y_predicted = input_data.iloc[:,1]
-    confusion_matrix_array = confusion_matrix(Y_actual, Y_predicted)
-    confusion_matrix_df = pd.DataFrame(confusion_matrix_array, columns=['Actual','Predicted'], index=['Actual','Predicted'])
-    return confusion_matrix_df
 
 # Load example data
 def load_example_data():
-    df = pd.read_csv('Y_example.csv')
+    df = pd.read_csv('sample_data.csv')
     return df
 
 # Download performance metrics
@@ -66,14 +58,14 @@ def filedownload(df):
 # Sidebar - Header
 st.sidebar.header('Input panel')
 st.sidebar.markdown("""
-[Example CSV file](https://raw.githubusercontent.com/dataprofessor/model_performance_app/main/Y_example.csv)
+[Example CSV file](https://raw.githubusercontent.com/chinya07/regression_model_performance_app/main/sample_data.csv)
 """)
 
 # Sidebar panel - Upload input file
 uploaded_file = st.sidebar.file_uploader('Upload your input CSV file', type=['csv'])
 
 # Sidebar panel - Performance metrics
-performance_metrics = ['Accuracy', 'Balanced_Accuracy', 'Precision', 'Recall','MCC', 'F1', 'Cohen_Kappa']
+performance_metrics = ['Explained_variance', 'Max_Error', 'MAE', 'MSE','RMSE', 'MSLE', 'MedAE', 'R2', 'MPD', 'MGD', 'MAPE']
 selected_metrics = st.sidebar.multiselect('Performance metrics', performance_metrics, performance_metrics)
 
 # Main panel
@@ -92,8 +84,6 @@ if uploaded_file is not None:
     selected_metrics_df = metrics_df[ selected_metrics ]
     st.header('Input data')
     st.write(input_df)
-    st.header('Confusion matrix')
-    st.write(confusion_matrix_df)
     st.header('Performance metrics')
     st.write(selected_metrics_df)
     st.markdown(filedownload(selected_metrics_df), unsafe_allow_html=True)
@@ -106,8 +96,6 @@ else:
         selected_metrics_df = metrics_df[ selected_metrics ]
         st.header('Input data')
         st.write(input_df)
-        st.header('Confusion matrix')
-        st.write(confusion_matrix_df)
         st.header('Performance metrics')
         st.write(selected_metrics_df)
         st.markdown(filedownload(selected_metrics_df), unsafe_allow_html=True)
